@@ -85,17 +85,15 @@ initialSolver strat
 solveTheGame :: SolverState -> IO ()
 solveTheGame gs = (solveTheGame' gs >> recurse) <|> recurse 
     where
-        recurse = yesOrNo "Solve Another" >>= \b -> if b then solveTheGame gs else pure ()
+        recurse = yesOrNo "Solve Another" >>= \b -> when b (solveTheGame gs) 
 
 solveTheGame' :: SolverState -> IO ()
 solveTheGame' s'@GS {remaining=_remaining} = do
     putStrLn $ "There are " ++ show _remaining ++ " possible words."
     let s = s'{possible= fmap snd $ AA.toList $ dict s}
-    foldM_ (\s n -> getHint n >>= \m -> suggestRound m s) s [1..6] 
+    foldM_ (\s n -> getHint n >>= \m -> suggestRound m s) s [1..turns] 
     putStrLn "You Lost \129319"
-    mzero
-
-
+    pure ()
 
 updateState :: [Match] -> SolverState -> IO SolverState
 updateState ms gs@GS {strategy=_strategy} = case _strategy of

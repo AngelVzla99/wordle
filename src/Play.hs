@@ -116,7 +116,7 @@ play' gs current max =  do
 readFive :: IO String
 readFive =  reverse <$> readFive' 5 5 ""
 
--- | Persistintly reads 5 valid characters.
+-- | Persistintly reads `max` valid characters.
 readFive' :: Int -> Int -> String -> IO String
 readFive' n max acc = do
     c <- toLower <$>  getChar'
