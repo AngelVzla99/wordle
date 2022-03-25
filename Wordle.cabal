@@ -18,6 +18,7 @@ build-type:     Simple
 extra-source-files:
     README.md
     ChangeLog.md
+    american-english
 
 source-repository head
   type: git
