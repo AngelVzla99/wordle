@@ -101,7 +101,14 @@ solveTheGame' :: SolverState -> IO ()
 solveTheGame' s'@GS {remaining=_remaining} = do
     putStrLn $ "There are " ++ show _remaining ++ " possible words."
     let s = s'{possible= fmap snd $ AA.toList $ dict s}
-    foldM_ (\s n -> getHint n >>= \m -> updateState m s >>= checkBaseCase) s [1..turns] 
+        f s n = do
+            ms <-  getHint n
+            newState <- updateState ms s
+            print newState
+            when (remaining newState == 1) mzero
+            pure newState
+    
+    foldM_ f s [1..turns] 
     putStrLn "You Lost \129319"
     pure ()
 
@@ -109,11 +116,6 @@ updateState :: [Match] -> SolverState -> IO SolverState
 updateState ms gs@GS {strategy=_strategy} = case _strategy of
     Naive  -> naive ms gs 
     Clever -> pure $ clever ms gs
-
-checkBaseCase ::  SolverState -> IO SolverState
-checkBaseCase s@GS {suggestion=sol,remaining=n}
-    | n == 1    =  putStrLn ("It must be \171" ++ sol ++ "!!!!!!!1") >> mzero  -- print s >> mzero 
-    | otherwise = print s >> pure s
 
 getHint :: Int -> IO [Match]
 getHint n = do 

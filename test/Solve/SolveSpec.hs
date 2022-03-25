@@ -13,7 +13,6 @@ import Test.Hspec.QuickCheck (prop)
 import Control.Monad
 import Prelude hiding (lookup)
 import Data.Foldable (traverse_)
-import Debug.Trace
 
 newtype RandomMatch    = RM  {getRM :: Match} deriving Show
 

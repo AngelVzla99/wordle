@@ -56,6 +56,7 @@ instance Read Match where
         skipSpaces
         
         case color of
+            
             '\11035'  -> return (Absent c)
             '\129000' -> return (Misplaced c)
             '\129001' -> return (Correct c)
