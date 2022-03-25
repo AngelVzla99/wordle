@@ -30,7 +30,7 @@ data Match
     = Absent    Char -- ^ The letter never appears in target
     | Misplaced Char -- ^ The letter appears somewhere in target (but it's misplaced)
     | Correct   Char -- ^ The letter appears exactly in the same position in target.
-
+    deriving Eq
 ------------------------------
 -- Instances                 |
 ------------------------------
@@ -60,6 +60,14 @@ instance Read Match where
             '\129000' -> return (Misplaced c)
             '\129001' -> return (Correct c)
             _         -> pfail
+            
+            -- windows does not allow copy pasting of unicodes into the powershell (not so powerful as it seems)
+            {-
+            'a'  -> return (Absent c)
+            'm' -> return (Misplaced c)
+            'c' -> return (Correct c)
+            _         -> pfail
+            -}
         where 
             -- can it be done without the lookahead?
             skipSpaces :: ReadPrec ()

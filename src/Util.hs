@@ -67,10 +67,10 @@ loadDictionary path = do
 yesOrNo :: String -> IO Bool
 yesOrNo text = withNoBuffer $ do
     putStr' ( text ++ " (y/n) ?" )
-    c <- getChar'
+    c <- getChar' 
     case c of 
         'y' -> putStr' " y\n" >>return True
-        'n' -> putStr' " n\n" >>return False
+        'n' -> putStr' " n\n" >>return False 
         _   -> putStr' "\n"   >> yesOrNo text
 
 

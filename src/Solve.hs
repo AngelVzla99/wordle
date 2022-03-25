@@ -11,7 +11,7 @@ module Solve where
 
 import AA (AA)
 import qualified AA 
-import Util 
+import Util
 import Match 
 import Data.Functor 
 import Data.Bifunctor
@@ -48,6 +48,16 @@ instance Show SolverState where
     show GS {suggestion=_suggestion,remaining=_remaining}
         = show _remaining ++ " words remain. I suggest: \171" ++  _suggestion ++ "\187."
 
+---------------------------------
+-- Auxiliar functions           |
+---------------------------------
+
+pickRandomList :: [a] -> IO a
+pickRandomList l = (l !!) <$> randomRIO (0, length l - 1)
+
+boolToInt :: Bool -> Int 
+boolToInt True = 1
+boolToInt _ = 0 
 
 ---------------------------------
 -- Functions                    |
@@ -91,7 +101,7 @@ solveTheGame' :: SolverState -> IO ()
 solveTheGame' s'@GS {remaining=_remaining} = do
     putStrLn $ "There are " ++ show _remaining ++ " possible words."
     let s = s'{possible= fmap snd $ AA.toList $ dict s}
-    foldM_ (\s n -> getHint n >>= \m -> suggestRound m s) s [1..turns] 
+    foldM_ (\s n -> getHint n >>= \m -> updateState m s >>= checkBaseCase) s [1..turns] 
     putStrLn "You Lost \129319"
     pure ()
 
@@ -100,10 +110,10 @@ updateState ms gs@GS {strategy=_strategy} = case _strategy of
     Naive  -> naive ms gs 
     Clever -> pure $ clever ms gs
 
-suggestRound :: [Match] -> SolverState -> IO SolverState
-suggestRound ms s@GS {suggestion=sol,remaining=n}
-    | n == 1    = putStrLn ("It must be \171" ++ sol ++ "\182") >> mzero 
-    | otherwise = updateState ms s >>= \s -> print s >> pure s
+checkBaseCase ::  SolverState -> IO SolverState
+checkBaseCase s@GS {suggestion=sol,remaining=n}
+    | n == 1    =  putStrLn ("It must be \171" ++ sol ++ "!!!!!!!1") >> mzero  -- print s >> mzero 
+    | otherwise = print s >> pure s
 
 getHint :: Int -> IO [Match]
 getHint n = do 
@@ -119,3 +129,44 @@ getHint n = do
         genCarita _ = "\129300"
 
         carita = genCarita n
+
+goodMatch :: (String,[Match]) -> Bool 
+goodMatch (str,m) = foldr condition True $ zip m str
+    where
+        arbol = AA.fromList $ map (\x -> (x,True)) str
+        condition :: (Match,Char) -> Bool -> Bool
+        condition (m,c) prev = case m of
+            Correct c2 -> prev && (c2==c) 
+            Misplaced c2 -> prev && (c2/=c) && (AA.member c2 arbol) 
+            Absent c2 -> prev && not (AA.member c2 arbol) 
+
+sieve :: [Match] -> [String] -> [String]
+sieve m strs = map fst $ filter goodMatch $ map addTo strs
+    where addTo x = (x,m) 
+
+naive :: [Match] -> SolverState -> IO SolverState 
+naive m (GS sug pos rem dic stra) = do 
+    let newPossible = sieve m pos 
+    newSuggestion <- pickRandomList newPossible
+    return $ GS newSuggestion newPossible (length newPossible) dic stra 
+
+clever :: [Match] -> SolverState -> SolverState
+clever m (GS sug pos rem dic stra) 
+    = (GS newSuggestion newPossible (length newPossible) dic stra)
+    where
+        newPossible = sieve m pos 
+        dup x = (x,x)
+        treePossible = AA.fromList $ map dup pos 
+        -- Esto se puede hacer sin pasar 'possible' a arbol, pero como lo pide el enunciado ...
+        newSuggestion = snd $ minimum $ countIfTarget treePossible
+
+countIfTarget :: (Foldable f, Functor f) => f String -> f (Int, String)
+countIfTarget arbol = fmap countRest arbol 
+    where 
+        countRest :: String -> (Int,String)
+        countRest str = foldr sumarTree (0,str) arbol
+        sumarTree :: String -> (Int,String) -> (Int,String)
+        sumarTree cuStr (suma,trg) = ( suma + (allIn cuStr trg) , trg ) 
+        allIn :: String -> String -> Int 
+        allIn str1 str2 = boolToInt $ all (\x -> elem x str2) str1
+

@@ -49,7 +49,7 @@ instance Show Result where
     show (Lose (T t)) = "Bummer! It was \171" ++ t ++ "\187 \128128 "
 
 ---------------------------------
--- Functions Auxiliares         |
+-- Auxiliar Functions           |
 ---------------------------------
 
 takeAA :: GameState ->  AA String String
@@ -112,7 +112,7 @@ play' gs current max =  do
         (_,True)  -> printMatch >> pure (Win t)
         (_,False) -> printMatch >> if current + 1 == max then pure $ Lose t else play' gs (current +1) max
 
--- | Persistintly reads 5 valid characters.
+-- | Persistintly reads 5 valid characters. 
 readFive :: IO String
 readFive =  reverse <$> readFive' 5 5 ""
 
