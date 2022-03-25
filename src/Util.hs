@@ -7,8 +7,7 @@ Stability   : experimental
 Portability : POSIX
 -}
 
-{-# LANGUAGE ForeignFunctionInterface #-}
-{-# LANGUAGE CPP #-}
+
 {-# LANGUAGE ScopedTypeVariables #-}
 module Util where 
 
@@ -96,7 +95,8 @@ withNoBuffer ma = do
         hSetBuffering stdin stdinBuffer 
         >> hSetBuffering stdout stdoutBuffer 
         >> hSetEcho stdout True 
-        >> throw e ) 
+        >> throw e ) -- we are going to assume that e is a synchronous exception... 
+
 
     hSetBuffering stdin stdinBuffer
     hSetBuffering stdout stdoutBuffer
@@ -105,7 +105,7 @@ withNoBuffer ma = do
     pure a
 
 -- | Prints a string to the `stdout` ASAP. Needed if buffer mode is anything other than `NoBuffering`.
--- (windows is not very nais to us :()
+-- (windows is not very nais to us :( )
 putStr' :: String -> IO ()
 putStr' s = putStr s >> hFlush stdout
 
@@ -115,20 +115,5 @@ putChar' c = putChar c >> hFlush stdout
 
 -- Multi-platform version of `getChar` which has a fix for a GHC bug with Windows cmd/Powershell
 getChar' :: IO Char
-getChar' = withNoBuffer $ do  -- just in case, DON'T echo
-#ifdef mingw32_HOST_OS
-      -- Windows has to do things...
-      c <- c_getch
-      let c' = chr . fromEnum $ c
-      return c'
-#else
-    -- Linux, Unix, Mac OS X can just use the normal getChar
-    getChar
-#endif
-
-#ifdef mingw32_HOST_OS  
-foreign import ccall unsafe "conio.h getch"
-  c_getch :: IO CInt
-#endif
-
+getChar' = withNoBuffer getChar
 

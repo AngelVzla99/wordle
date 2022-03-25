@@ -8,7 +8,7 @@ Portability : POSIX
 -}
 
 module AA 
-    {-( AA
+    ( AA
     , empty 
     , isEmpty
     , insert
@@ -18,7 +18,8 @@ module AA
     , delete 
     , member
     , fromList
-    )-}
+    , toList
+    )
     where
 
 import Prelude hiding (lookup)

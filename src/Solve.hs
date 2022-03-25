@@ -7,21 +7,25 @@ Stability   : experimental
 Portability : POSIX
 -}
 
-module Solve where
+module Solve
+    ( initialSolver
+    , solveTheGame
+    , play
+    )
+    where
 
 import AA (AA)
 import qualified AA 
-import Util
-import Match 
-import Data.Functor 
-import Data.Bifunctor
-import Control.Monad
-import System.Random
-import Text.Read
-import Control.Applicative
-import System.Environment
-import Data.Char
-import System.IO
+import Util ( dictionary, loadDictionary, turns, yesOrNo )
+import Match ( Match(..) ) 
+import Data.Functor ( (<&>) ) 
+import Control.Monad ( foldM_, when, MonadPlus(mzero) )
+import Text.Read ( readMaybe )
+import Control.Applicative ( Alternative((<|>)) )
+import System.Environment ( getArgs )
+import Data.Char ( toLower )
+import System.IO ( hFlush, stdout )
+import System.Random ( Random(randomRIO) )
 
 ---------------------------------
 -- Types                        |
@@ -71,7 +75,7 @@ play = do
         []         -> putStrLn "Naive Wordle solver!"  >> f Naive 
         ["naive"]  -> putStrLn "Naive Wordle solver!"  >> f Naive 
         ["clever"] -> putStrLn "Clever Wordle solver!" >> f Clever
-        _ -> putStrLn "Invalid arguments, syntax  should be: $  stack exec solver-exe [naive | clever]"    
+        _ -> putStrLn "Invalid arguments, syntax  should be: $  stack exec solver-exe [naive | clever]"   
 
 
 infixr 9 |>

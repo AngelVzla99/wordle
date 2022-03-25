@@ -6,16 +6,27 @@ Maintainer  : 15-11139@usb.ve, 16-10400@usb.ve
 Stability   : experimental
 Portability : POSIX
 -}
-module Play where 
+module Play 
+    ( initialState
+    , playTheGame 
+    )
+    where 
 -- Aca falta un export de initialState al programa principal
 
 import Util
+    ( dictionary,
+      getChar',
+      loadDictionary,
+      putChar',
+      putStr',
+      turns,
+      yesOrNo )
 import System.Random (randomRIO)
-import Match -- No deberian ser necesarios 
-import AA    
-import System.IO 
-import Control.Monad
-import Data.Char
+import Match ( fullMatch, match, Guess(G), Target(T) ) -- No deberian ser necesarios 
+import AA (AA)
+import qualified AA
+import Control.Monad ( (>=>), foldM, replicateM_, when )
+import Data.Char ( toLower )
 
 ---------------------------------
 -- Types                        |
@@ -85,12 +96,6 @@ playTheGame state = do
         changeTarget :: GameState -> Target -> GameState
         changeTarget (GS p w s t d) t2 = GS p w s t2 d
 
--- PARA PROBAR TEMPORALMENTE, LUEGO BORRAR
-menu = do
-    --hSetBuffering stdout NoBuffering
-    --hSetBuffering stdin NoBuffering
-    state <- initialState
-    playTheGame state
 
 -- | Plays a single round.
 play :: GameState -> IO Result
@@ -122,15 +127,19 @@ readFive' n max acc = do
     c <- toLower <$>  getChar'
 
     case (c, c `elem` ['a'..'z']) of 
-        ('\b',_) -> when (n < max) eraseChar >> readFive' (min max (n+1)) max (drop 1 acc)
-        ('\n',_) -> if n == 0 then pure acc else readFive'  n max acc 
-        ('\r',_) -> if n == 0 then pure acc else readFive'  n max acc 
-        (_,True) -> if n > 0 then putChar' c >> readFive' (n-1) max (c:acc) else readFive' n max acc 
-        _        -> readFive' n max acc 
+        ('\DEL',_) -> when (n < max) eraseChar >> readFive' (min max (n+1)) max (drop 1 acc)
+        ('\b',_)   -> when (n < max) eraseChar >> readFive' (min max (n+1)) max (drop 1 acc)
+        ('\n',_)   -> if n == 0 then pure acc else readFive'  n max acc 
+        ('\r',_)   -> if n == 0 then pure acc else readFive'  n max acc 
+        (_,True)   -> if n > 0 then putChar' c >> readFive' (n-1) max (c:acc) else readFive' n max acc 
+        _          -> readFive' n max acc 
 
 -- | Erases a character from the `stdout`
 eraseChar :: IO ()
-eraseChar = putChar' '\b' >> putChar' ' ' >> putChar' '\b'
+eraseChar = putChar' eraseChar >> putChar' ' ' >> putChar' eraseChar
+    where 
+        -- I'm not sure which one is preferable, but both works.
+        eraseChar = '\b' --'\BS' 
 
 -- | Erases `n` character from the `stdout`
 eraseNChar :: Int -> IO ()
