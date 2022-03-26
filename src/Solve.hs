@@ -22,7 +22,6 @@ import Data.Functor ( (<&>) )
 import Control.Monad ( foldM_, when, MonadPlus(mzero) )
 import Text.Read ( readMaybe )
 import Control.Applicative ( Alternative((<|>)) )
-
 import Data.Char ( toLower )
 import System.IO ( hFlush, stdout )
 import System.Random ( Random(randomRIO) )
