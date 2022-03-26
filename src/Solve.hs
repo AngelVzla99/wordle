@@ -10,7 +10,7 @@ Portability : POSIX
 module Solve
     ( initialSolver
     , solveTheGame
-    , play
+    , Solver(..)
     )
     where
 
@@ -22,7 +22,7 @@ import Data.Functor ( (<&>) )
 import Control.Monad ( foldM_, when, MonadPlus(mzero) )
 import Text.Read ( readMaybe )
 import Control.Applicative ( Alternative((<|>)) )
-import System.Environment ( getArgs )
+
 import Data.Char ( toLower )
 import System.IO ( hFlush, stdout )
 import System.Random ( Random(randomRIO) )
@@ -67,15 +67,7 @@ boolToInt _ = 0
 -- Functions                    |
 ---------------------------------
 
-play :: IO ()
-play = do
-    args <- fmap ((fmap . fmap) toLower) getArgs 
-    let f s = initialSolver s  >>= solveTheGame
-    case args of
-        []         -> putStrLn "Naive Wordle solver!"  >> f Naive 
-        ["naive"]  -> putStrLn "Naive Wordle solver!"  >> f Naive 
-        ["clever"] -> putStrLn "Clever Wordle solver!" >> f Clever
-        _ -> putStrLn "Invalid arguments, syntax  should be: $  stack exec solver-exe [naive | clever]"   
+
 
 
 infixr 9 |>
