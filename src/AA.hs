@@ -270,6 +270,7 @@ type VTree k a =  Either (Crumbs,InvariantError) (AA k a)
 -- Auxiliar func Invariant      |
 ---------------------------------
 
+-- | This function combine two answers for the checkInvariant function
 combineVTree :: Direction -> VTree k v -> VTree k v
 combineVTree _ (Right v) = Right v
 combineVTree dir (Left (lista,err)) = Left ( [dir]++lista, err )
@@ -278,9 +279,18 @@ combineVTree dir (Left (lista,err)) = Left ( [dir]++lista, err )
 -- Invariant                    |
 ---------------------------------
 
+-- | This functions verify the five invariants in any AA tree
+-- | 1) The level of every leaf node is one.
+-- | 2) The level of every left child is exactly one less than that of its parent.
+-- | 3) The level of every right child is equal to or one less than that of its parent.
+-- | 4) The level of every right grandchild is strictly less than that of its grandparent.
+-- | 5) Every node of level greater than one has two children.
+-- | The function return a VTree that can be a tuple (Error,ErrorPath)
+-- | or if all the conditions are satisfied, return the AA tree
 checkInvariant :: Ord k => AA k v -> VTree k v
 checkInvariant nodo = checkInvariant' nodo Empty
 
+-- | Auxiliar function for checkInvariant (check all the conditions)
 checkInvariant' :: Ord k => AA k v -> AA k v -> VTree k v
 checkInvariant' Empty grandP = Right $ Empty
 -- Casos lvl = 1
